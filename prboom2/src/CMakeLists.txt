@@ -374,7 +374,21 @@ function(AddGameExecutable TARGET SOURCES)
         target_include_directories(${TARGET} PRIVATE ${ALSA_INCLUDE_DIR})
         target_link_libraries(${TARGET} PRIVATE ${ASOUND_LIBRARY})
     endif()
-    add_dependencies(${TARGET} prboomwad)
+
+    if (EMSCRIPTEN)
+        message(STATUS "${CMAKE_SOURCE_DIR}")
+        set(prboom-wad-file "${CMAKE_SOURCE_DIR}/prboom-plus.wad")
+        message(STATUS "Checking if ${prboom-wad-file} exists")
+
+        if (NOT EXISTS "${prboom-wad-file}")
+            message(FATAL_ERROR "${prboom-wad-file} does not exist.")
+        endif()
+
+        set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-s ERROR_ON_UNDEFINED_SYMBOLS=0 --preload-file ${prboom-wad-file}@/ --preload-file ${CMAKE_SOURCE_DIR}/doom1.wad@/ -o index.html")
+        set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "index")
+    else()
+        add_dependencies(${TARGET} prboomwad)
+    endif()
 
     if(MSVC)
         set_target_properties(${TARGET} PROPERTIES
@@ -411,6 +425,7 @@ AddGameExecutable(prboom-plus "${PRBOOM_PLUS_SOURCES}")
 
 option(BUILD_SERVER "Build PrBoom-Plus server executable" ON)
 
+if(NOT EMSCRIPTEN)
 if(BUILD_SERVER AND SDL2_NET_FOUND)
     set(PRBOOM_PLUS_GAME_SERVER_SOURCES
         d_server.c
@@ -452,6 +467,7 @@ if(BUILD_SERVER AND SDL2_NET_FOUND)
     )
     ApplySDL2NetOptions(prboom-plus-game-server)
     install(TARGETS prboom-plus-game-server COMPONENT "Game server executable" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
 endif()
 
 
