@@ -103,6 +103,11 @@
 #include "WIN/win_fopen.h"
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+
 void GetFirstMap(int *ep, int *map); // Ty 08/29/98 - add "-warp x" functionality
 static void D_PageDrawer(void);
 
@@ -445,6 +450,86 @@ void D_Display (fixed_t frac)
 static int auto_shot_count, auto_shot_time;
 static const char *auto_shot_fname;
 
+
+static void D_LoopIter(void)
+{
+  WasRenderedInTryRunTics = false;
+  // frame syncronous IO operations
+  I_StartFrame ();
+
+  if (ffmap == gamemap) ffmap = 0;
+
+  // process one or more tics
+  if (singletics)
+  {
+    I_StartTic ();
+    G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
+    if (advancedemo)
+      D_DoAdvanceDemo ();
+    M_Ticker ();
+    G_Ticker ();
+    P_Checksum(gametic);
+    gametic++;
+    maketic++;
+  }
+  else
+  {
+    TryRunTics (); // will run at least one tic
+  }
+
+  // killough 3/16/98: change consoleplayer to displayplayer
+  if (players[displayplayer].mo) // cph 2002/08/10
+    S_UpdateSounds(players[displayplayer].mo);// move positional sounds
+
+  // Update display, next frame, with current state.
+  if (!movement_smooth || !WasRenderedInTryRunTics || gamestate != wipegamestate)
+  {
+    // NSM
+    if (capturing_video && !doSkip)
+    {
+      dboolean first = true;
+      int cap_step = TICRATE * FRACUNIT / cap_fps;
+      cap_frac += cap_step;
+      while(cap_frac <= FRACUNIT)
+      {
+        isExtraDDisplay = !first;
+        first = false;
+        D_Display(cap_frac);
+        isExtraDDisplay = false;
+        I_CaptureFrame();
+        cap_frac += cap_step;
+      }
+      cap_frac -= FRACUNIT + cap_step;
+    }
+    else
+    {
+      D_Display(I_GetTimeFrac());
+    }
+  }
+
+  // CPhipps - auto screenshot
+  if (auto_shot_fname && !--auto_shot_count)
+  {
+    auto_shot_count = auto_shot_time;
+    M_DoScreenShot(auto_shot_fname);
+  }
+
+  //e6y
+  if (avi_shot_fname && !doSkip)
+  {
+    int len;
+    char *avi_shot_curr_fname;
+    avi_shot_num++;
+    len = snprintf(NULL, 0, "%s%06d.tga", avi_shot_fname, avi_shot_num);
+    avi_shot_curr_fname = malloc(len+1);
+    sprintf(avi_shot_curr_fname, "%s%06d.tga", avi_shot_fname, avi_shot_num);
+    M_DoScreenShot(avi_shot_curr_fname);
+    free(avi_shot_curr_fname);
+  }
+}
+
+
+
 //
 //  D_DoomLoop()
 //
@@ -461,79 +546,16 @@ static void D_DoomLoop(void)
   if (quickstart_window_ms > 0)
     I_uSleep(quickstart_window_ms * 1000);
 
+  #ifdef __EMSCRIPTEN__
+      emscripten_set_main_loop(D_LoopIter, 0, 1);
+  #else
   for (;;)
     {
-      WasRenderedInTryRunTics = false;
-      // frame syncronous IO operations
-      I_StartFrame ();
-
-      if (ffmap == gamemap) ffmap = 0;
-
-      // process one or more tics
-      if (singletics)
-        {
-          I_StartTic ();
-          G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
-          if (advancedemo)
-            D_DoAdvanceDemo ();
-          M_Ticker ();
-          G_Ticker ();
-          P_Checksum(gametic);
-          gametic++;
-          maketic++;
-        }
-      else
-        TryRunTics (); // will run at least one tic
-
-      // killough 3/16/98: change consoleplayer to displayplayer
-      if (players[displayplayer].mo) // cph 2002/08/10
-        S_UpdateSounds(players[displayplayer].mo);// move positional sounds
-
-      // Update display, next frame, with current state.
-      if (!movement_smooth || !WasRenderedInTryRunTics || gamestate != wipegamestate)
-      {
-        // NSM
-        if (capturing_video && !doSkip)
-        {
-          dboolean first = true;
-          int cap_step = TICRATE * FRACUNIT / cap_fps;
-          cap_frac += cap_step;
-          while(cap_frac <= FRACUNIT)
-          {
-            isExtraDDisplay = !first;
-            first = false;
-            D_Display(cap_frac);
-            isExtraDDisplay = false;
-            I_CaptureFrame();
-            cap_frac += cap_step;
-          }
-          cap_frac -= FRACUNIT + cap_step;
-        }
-        else
-        {
-          D_Display(I_GetTimeFrac());
-        }
-      }
-
-      // CPhipps - auto screenshot
-      if (auto_shot_fname && !--auto_shot_count) {
-  auto_shot_count = auto_shot_time;
-  M_DoScreenShot(auto_shot_fname);
-      }
-//e6y
-      if (avi_shot_fname && !doSkip)
-      {
-        int len;
-        char *avi_shot_curr_fname;
-        avi_shot_num++;
-        len = snprintf(NULL, 0, "%s%06d.tga", avi_shot_fname, avi_shot_num);
-        avi_shot_curr_fname = malloc(len+1);
-        sprintf(avi_shot_curr_fname, "%s%06d.tga", avi_shot_fname, avi_shot_num);
-        M_DoScreenShot(avi_shot_curr_fname);
-        free(avi_shot_curr_fname);
-      }
+        D_LoopIter();
+    }
+  #endif
 }
-}
+
 
 //
 //  DEMO LOOP
