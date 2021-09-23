@@ -87,10 +87,17 @@ if(BUILD_GL)
     find_package(OpenGL)
 endif()
 
+
 find_package(SDL2 2.0.7 REQUIRED)
+
 if(EMSCRIPTEN)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=2")
- endif()
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(OPT_FLAGS "-Oz")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(OPT_FLAGS "-O0 -gsource-map --source-map-base /")
+    endif()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -s USE_SDL=2")
+endif()
 
 option(WITH_IMAGE "Use SDL2_image if available" ON)
 if(WITH_IMAGE)
