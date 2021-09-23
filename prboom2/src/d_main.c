@@ -546,9 +546,7 @@ static void D_DoomLoop(void)
   if (quickstart_window_ms > 0)
     I_uSleep(quickstart_window_ms * 1000);
 
-  #ifdef __EMSCRIPTEN__
-      emscripten_set_main_loop(D_LoopIter, 0, 1);
-  #else
+  #ifndef __EMSCRIPTEN__
   for (;;)
     {
         D_LoopIter();
@@ -1979,6 +1977,10 @@ static void D_DoomMainSetup(void)
 
 
   // 1/18/98 killough: Z_Init() call moved to i_main.c
+
+  #ifdef __EMSCRIPTEN__
+      emscripten_set_main_loop(D_LoopIter, 0, 0);
+  #endif
 
   // CPhipps - move up netgame init
   //jff 9/3/98 use logical output routine
