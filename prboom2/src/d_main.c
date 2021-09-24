@@ -105,6 +105,14 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+static void EM_CancelEmscriptenLoop(void)
+{
+    EM_ASM({
+        document.dispatchEvent(new CustomEvent("I_AtExit"));
+    });
+
+    emscripten_cancel_main_loop();
+}
 #endif
 
 
@@ -1980,6 +1988,7 @@ static void D_DoomMainSetup(void)
 
   #ifdef __EMSCRIPTEN__
       emscripten_set_main_loop(D_LoopIter, 0, 0);
+      I_AtExit(EM_CancelEmscriptenLoop, true);
   #endif
 
   // CPhipps - move up netgame init
