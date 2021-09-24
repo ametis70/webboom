@@ -50,6 +50,8 @@
 #include "sc_man.h"
 #include "e6y.h"
 
+#include <emscripten.h>
+
 // when to clip out sounds
 // Does not fit the large outdoor areas.
 #define S_CLIPPING_DIST (1200<<FRACBITS)
@@ -407,6 +409,7 @@ void S_UnlinkSound(void *origin)
 //
 // Stop and resume music, during game PAUSE.
 //
+EMSCRIPTEN_KEEPALIVE
 void S_PauseSound(void)
 {
   //jff 1/22/98 return if music is not enabled
@@ -420,6 +423,7 @@ void S_PauseSound(void)
     }
 }
 
+EMSCRIPTEN_KEEPALIVE
 void S_ResumeSound(void)
 {
   //jff 1/22/98 return if music is not enabled
@@ -495,6 +499,7 @@ void S_UpdateSounds(void* listener_p)
 
 
 
+EMSCRIPTEN_KEEPALIVE
 void S_SetMusicVolume(int volume)
 {
   //jff 1/22/98 return if music is not enabled
@@ -503,11 +508,18 @@ void S_SetMusicVolume(int volume)
   if (volume < 0 || volume > 15)
     I_Error("S_SetMusicVolume: Attempt to set music volume at %d", volume);
   I_SetMusicVolume(volume);
+
+  #ifdef __EMSCRIPTEN__
+    EM_ASM({ 
+          document.dispatchEvent(new CustomEvent("S_SetMusicVolume", { detail: { volume: $0 }}));
+    }, volume);
+  #endif
   snd_MusicVolume = volume;
 }
 
 
 
+EMSCRIPTEN_KEEPALIVE
 void S_SetSfxVolume(int volume)
 {
   //jff 1/22/98 return if sound is not enabled
@@ -515,6 +527,12 @@ void S_SetSfxVolume(int volume)
     return;
   if (volume < 0 || volume > 127)
     I_Error("S_SetSfxVolume: Attempt to set sfx volume at %d", volume);
+  #ifdef __EMSCRIPTEN__
+    EM_ASM({ 
+          document.dispatchEvent(new CustomEvent("S_SetSfxVolume", { detail: { volume: $0 } }));
+    }, volume);
+  #endif
+
   snd_SfxVolume = volume;
 }
 
