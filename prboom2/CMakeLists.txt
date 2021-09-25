@@ -96,6 +96,12 @@ if(EMSCRIPTEN)
     elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(OPT_FLAGS "-O0 -gsource-map --source-map-base /")
     endif()
+
+    # See https://wiki.libsdl.org/SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT
+    if (DEFINED EM_KEYBOARD_ELEMENT)
+        add_compile_definitions(EM_KEYBOARD_ELEMENT=${EM_KEYBOARD_ELEMENT})
+    endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -s USE_SDL=2")
 endif()
 

@@ -1208,6 +1208,14 @@ void I_UpdateVideoMode(void)
     init_flags |= SDL_WINDOW_RESIZABLE;
 #endif
 
+  #ifdef __EMSCRIPTEN__
+    #ifdef EM_KEYBOARD_ELEMENT
+        SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, EM_KEYBOARD_ELEMENT);
+    #else
+        SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#window"); // Default hint value
+    #endif
+  #endif
+
   if (V_GetMode() == VID_MODEGL)
   {
 #ifdef GL_DOOM

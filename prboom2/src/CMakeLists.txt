@@ -376,8 +376,6 @@ function(AddGameExecutable TARGET SOURCES)
     endif()
 
     if (EMSCRIPTEN)
-        message(STATUS "${CMAKE_SOURCE_DIR}")
-
         if(NOT DEFINED PRBOOM_WAD)
             set(PRBOOM_WAD "${CMAKE_SOURCE_DIR}/prboom-plus.wad")
         endif()
@@ -387,7 +385,17 @@ function(AddGameExecutable TARGET SOURCES)
             message(FATAL_ERROR "${PRBOOM_WAD} does not exist.")
         endif()
 
-        set (_link_flags "-s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ALLOW_MEMORY_GROWTH=1 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['\$dynCall'] -s EMULATE_FUNCTION_POINTER_CASTS=1 -s EXPORTED_RUNTIME_METHODS=ccall,cwrap -s ASYNCIFY=1 --preload-file ${PRBOOM_WAD}@/")
+        set (_link_flags "\
+-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
+-s ALLOW_MEMORY_GROWTH=1 \
+-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['\$dynCall'] \
+-s EMULATE_FUNCTION_POINTER_CASTS=1 \
+-s EXPORTED_RUNTIME_METHODS=ccall,cwrap,requestPointerLock \
+-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0 \
+-s ASYNCIFY=1 \
+-s ENVIRONMENT='web' \
+--preload-file ${PRBOOM_WAD}@/ \
+")
 
         if (DEFINED PRELOAD_IWAD)
             message(STATUS "Using IWAD: ${PRELOAD_IWAD}")
@@ -417,6 +425,7 @@ function(AddGameExecutable TARGET SOURCES)
             set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "prboom")
             set_target_properties(${TARGET} PROPERTIES SUFFIX ".js")
         elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set_target_properties(${TARGET} PROPERTIES LINK_DEPENDS "${CMAKE_SOURCE_DIR}/emscripten/shell.html")
             set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "${_link_flags}")
             set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "index")
             set_target_properties(${TARGET} PROPERTIES SUFFIX ".html")
