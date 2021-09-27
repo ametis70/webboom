@@ -409,8 +409,11 @@ void S_UnlinkSound(void *origin)
 //
 // Stop and resume music, during game PAUSE.
 //
+void
+#ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
-void S_PauseSound(void)
+#endif
+S_PauseSound(void)
 {
   //jff 1/22/98 return if music is not enabled
   if (!mus_card || nomusicparm)
@@ -423,8 +426,11 @@ void S_PauseSound(void)
     }
 }
 
+void
+#ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
-void S_ResumeSound(void)
+#endif
+S_ResumeSound(void)
 {
   //jff 1/22/98 return if music is not enabled
   if (!mus_card || nomusicparm)
@@ -497,10 +503,11 @@ void S_UpdateSounds(void* listener_p)
     }
 }
 
-
-
+void 
+#ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
-void S_SetMusicVolume(int volume)
+#endif
+S_SetMusicVolume(int volume)
 {
   //jff 1/22/98 return if music is not enabled
   if (!mus_card || nomusicparm)
@@ -518,9 +525,11 @@ void S_SetMusicVolume(int volume)
 }
 
 
-
+void 
+#ifdef __EMSCRIPTEN__
 EMSCRIPTEN_KEEPALIVE
-void S_SetSfxVolume(int volume)
+#endif
+S_SetSfxVolume(int volume)
 {
   //jff 1/22/98 return if sound is not enabled
   if (!snd_card || nosfxparm)
@@ -537,6 +546,13 @@ void S_SetSfxVolume(int volume)
 }
 
 
+#ifdef __EMSCRIPTEN__
+void EMSCRIPTEN_KEEPALIVE S_SetVolumes(int sfx, int music)
+{
+    S_SetSfxVolume(sfx);
+    S_SetMusicVolume(music);
+}
+#endif
 
 // Starts some music with the music id found in sounds.h.
 //
