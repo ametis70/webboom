@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
-project("PrBoom-Plus"
+project("WebBoom"
     VERSION 2.6.1
-    HOMEPAGE_URL "https://github.com/coelckers/prboom-plus")
+    HOMEPAGE_URL "https://github.com/ianmethyst/webboom")
 
 if (EMSCRIPTEN)
     message(STATUS "This is an Emscripten build.")
