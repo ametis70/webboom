@@ -77,6 +77,10 @@ typedef BOOL (WINAPI *SetAffinityFunc)(HANDLE hProcess, DWORD mask);
 
 #include "e6y.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 /* Most of the following has been rewritten by Lee Killough
  *
  * I_GetTime
@@ -378,7 +382,11 @@ void I_AtExit(atexit_func_t func, dboolean run_on_error)
  * Prevent infinitely recursive exits -- killough
  */
 
-void I_SafeExit(int rc)
+void
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+I_SafeExit(int rc)
 {
   atexit_listentry_t *entry;
 
@@ -394,7 +402,11 @@ void I_SafeExit(int rc)
     }
   }
 
+  #ifdef __EMSCRIPTEN__
+  emscripten_force_exit(rc);
+  #else
   exit(rc);
+  #endif
 }
 
 static void I_Quit (void)
