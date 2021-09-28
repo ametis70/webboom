@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>WebBoom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --shadow: 0px 0px 30px 15px rgba(0, 0, 0, 0.25);
+        --bg: #0b0b0b;
+        --fg: #fcfcfc;
+        --yellow: #d8c453;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: 'Roboto Mono', monospace;
+        scrollbar-color: var(--yellow) var(--bg);
+      }
+
+      *::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background-color: var(--yellow);
+        border-radius: 0px;
+        border: 0;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+
+      *:focus {
+        outline: solid var(--yellow);
+      }
+
+      a {
+        color: var(--yellow);
+      }
+
+      a:hover,
+      button:hover {
+        opacity: 0.8;
+      }
+
+      a:visited {
+        color: var(--yellow);
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        background: linear-gradient(180deg, #282828 0%, #171717 100%);
+        color: var(--fg);
+      }
+
+      button,
+      .button {
+        font-size: 1rem;
+        cursor: pointer;
+        border: 0;
+        background-color: var(--yellow);
+        color: var(--bg);
+        padding: 0.5rem 1rem;
+      }
+
+      canvas {
+        display: block;
+        border: 0px none;
+        background-color: var(--bg);
+        margin: 2rem auto;
+        box-shadow: var(--shadow);
+      }
+
+      footer {
+        justify-self: flex-end;
+        padding: 1rem;
+        font-size: 0.75em;
+        opacity: 0.75;
+      }
+      footer {
+        justify-self: flex-end;
+      }
+
+      header {
+        width: 100%;
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        height: 72px;
+      }
+
+      hr {
+        opacity: 0.1;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      input[type='file'] {
+        display: none;
+      }
+
+      main {
+        max-width: 100%;
+        padding: 1rem;
+      }
+
+      progress {
+        border-radius: 0;
+        width: 50%;
+        height: 2rem;
+        background-color: var(--bg);
+      }
+      progress::-moz-progress-bar {
+        background-color: var(--yellow);
+        border-radius: 0px;
+      }
+      progress::-webkit-progress-bar {
+        background-color: var(--bg);
+        border-radius: 0px;
+      }
+      progress::-webkit-progress-value {
+        background-color: var(--yellow);
+        border-radius: 0px;
+      }
+      spacer: {
+        flex: 1 1 0;
+      }
+      textarea {
+        resize: none;
+        display: block;
+        font-family: monospace;
+        width: calc(100vw - 4rem);
+        min-width: 100%;
+        margin: 0 auto;
+        color: var(--fg);
+        background-color: var(--bg);
+        box-shadow: var(--shadow);
+        padding: 2rem 2rem 0 2rem;
+        margin-bottom: 2rem;
+        border: 0;
+      }
+
+      .big {
+        font-size: 36px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .icon {
+        padding: 0;
+        color: var(--yellow);
+        background: none;
+      }
+
+      .launcher input {
+        flex: 1 1 0;
+        background: none;
+        color: white;
+        font-size: 1rem;
+        border-left-width: 0;
+        border-right-width: 0;
+        border-top-width: 0;
+        border-bottom-width: 1px;
+        border-color: rgba(255, 255, 255, 0.33);
+        margin-right: 1rem;
+      }
+
+      .launcher label {
+        margin-right: 1em;
+      }
+
+      .launcher label:not(.button) {
+        opacity: 0.5;
+      }
+
+      .launcher {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        width: 100%;
+        margin: 2rem auto;
+      }
+
+      .spacer {
+        flex: 1 1 0;
+      }
+
+      #actions button {
+        margin-right: 1rem;
+      }
+      #actions {
+        display: flex;
+      }
+      #container {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+      }
+
+      #logo {
+        height: 100%;
+        padding: 1rem;
+      }
+      #start {
+        max-width: 640px;
+      }
+
+      #status {
+        text-align: center;
+      }
+
+      #status-container {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <header>
+        <img id="logo" src="emscripten/logo.png" />
+
+        <div id="actions" class="hidden">
+          <button id="fullscreen" class="icon">
+            <span class="material-icons big"> fullscreen </span>
+          </button>
+          <button id="volume" class="icon">
+            <span id="volumeicon" class="material-icons big"> volume_off </span>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section id="start">
+          <p>
+            WebBoom is a&nbsp;
+            <a href="https://webassembly.org/">WebAssembly</a>&nbsp;port of Doom based
+            on&nbsp;<a href="http://prboom-plus.sourceforge.net/">PrBoom+</a>.
+          </p>
+          <hr />
+          <div class="launcher">
+            <label> $ ./webboom</label>
+            <input id="arguments" type="text" placeholder="-file doom1.wad" />
+            <button id="launch">Launch Doom</button>
+          </div>
+          <hr />
+          <p>
+            You can load a custom&nbsp;<a href="https://doom.fandom.com/wiki/WAD">WAD</a
+            >&nbsp;using the button below. To use it, modify the command (i.e.
+            adding&nbsp;
+            <span style="background-color: var(--bg)">-file you_file.wad</span>) before
+            clicking on the "Launch Doom" button.
+          </p>
+
+          <div class="launcher">
+            <label>Load WAD:</label>
+            <label for="upload" class="button"> Select file </label>
+            <input id="upload" type="file" accept=".wad" />
+            <label id="filename"></label>
+            <button
+              id="clearupload"
+              aria-label="Remove uploaded file"
+              class="icon hidden"
+            >
+              <span class="material-icons">close </span>
+            </button>
+          </div>
+
+          <p style="opacity: 0.5">
+            WebDoom comes with the&nbsp;
+            <a href="https://doomwiki.org/wiki/Knee-Deep_in_the_Dead"
+              >shareware version of Doom</a
+            >&nbsp;preloaded, but it also supports&nbsp;<a
+              href="https://doomwiki.org/wiki/The_Ultimate_Doom"
+              >The Ultimate Doom</a
+            >&nbsp;and&nbsp;<a href="https://doomwiki.org/wiki/Doom_II">Doom II</a>, and
+            also any WAD based off these two.&nbsp;<a href="https://zdoom.org/wiki/IWAD"
+              >This link</a
+            >&nbsp;contains a list of games and where to get them, but keep in mind that
+            games based on&nbsp;<a href="https://doomwiki.org/wiki/Heretic">Heretic</a
+            >&nbsp;or&nbsp;<a href="https://doomwiki.org/wiki/Hexen">Hexen</a>&nbsp;won't
+            work.
+          </p>
+        </section>
+
+        <section id="main" class="hidden">
+          <canvas id="doom" tabindex="-1"></canvas>
+
+          <div id="status-container">
+            <p id="status"></p>
+            <progress value="0" max="100" id="progress" hidden="1"></progress>
+          </div>
+
+          <textarea id="output" rows="12" disabled></textarea>
+        </section>
+      </main>
+
+      <div class="spacer"></div>
+      <footer>
+        <a href="https://github.com/ianmethyst/webboom">Source code on GitHub</a>
+      </footer>
+    </div>
+
+    <!-- {{{ SCRIPT }}} -->
+
+    <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript">
+      const canvas = document.querySelector('#doom')
+      const statusElement = document.querySelector('#status')
+      const progressElement = document.querySelector('#progress')
+      const fullscreenButton = document.querySelector('#fullscreen')
+      const argumentsInput = document.querySelector('#arguments')
+      const launchButton = document.querySelector('#launch')
+      const actionsBar = document.querySelector('#actions')
+      const startSection = document.querySelector('#start')
+      const mainSection = document.querySelector('#main')
+
+      const reader = new FileReader()
+      const uploadInput = document.querySelector('#upload')
+      const filenameLabel = document.querySelector('#filename')
+      const clearUploadButton = document.querySelector('#clearupload')
+
+      const volumeButton = document.querySelector('#volume')
+      const volumeIcon = document.querySelector('#volumeicon')
+      let sfxVolume = 0
+      let sfxMusic = 0
+      let storedVolume = null
+
+      canvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault()
+      })
+      canvas.addEventListener('mousedown', (e) => {
+        if (document.activeElement !== e.target) {
+          e.target.focus()
+        }
+
+        if (
+          document.fullscreenElement === e.target &&
+          document.pointerLockElement !== e.target
+        ) {
+          e.target.requestPointerLock()
+        }
+      })
+
+      fullscreenButton.addEventListener('click', () => {
+        canvas.requestFullscreen()
+        canvas.requestPointerLock()
+        canvas.focus()
+      })
+
+      const moduleSettings = {
+        preRun: [],
+        postRun: [],
+        print: (function () {
+          const element = document.getElementById('output')
+          if (element) element.value = '' // clear browser cache
+          return function (text) {
+            if (arguments.length > 1)
+              text = Array.prototype.slice.call(arguments).join(' ')
+            console.log(text)
+            if (element) {
+              element.value += text + '\n'
+              element.scrollTop = element.scrollHeight // focus on bottom
+            }
+          }
+        })(),
+        printErr: function (text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ')
+          console.error(text)
+        },
+        canvas: canvas,
+        setStatus: function (text) {
+          if (!moduleSettings.setStatus.last)
+            moduleSettings.setStatus.last = { time: Date.now(), text: '' }
+          if (text === moduleSettings.setStatus.last.text) return
+          const m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/)
+          const now = Date.now()
+          if (m && now - moduleSettings.setStatus.last.time < 30) return // if this is a progress update, skip it if too soon
+          moduleSettings.setStatus.last.time = now
+          moduleSettings.setStatus.last.text = text
+          if (m) {
+            text = m[1]
+            progressElement.value = parseInt(m[2]) * 100
+            progressElement.max = parseInt(m[4]) * 100
+            progressElement.hidden = false
+          } else {
+            progressElement.value = null
+            progressElement.max = null
+            progressElement.hidden = true
+          }
+          statusElement.innerHTML = text
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function (left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left)
+          moduleSettings.setStatus(
+            left
+              ? 'Preparing... (' +
+                  (this.totalDependencies - left) +
+                  '/' +
+                  this.totalDependencies +
+                  ')'
+              : 'All downloads complete.',
+          )
+        },
+      }
+
+      window.onerror = function () {
+        moduleSettings.setStatus('Exception thrown, see JavaScript console')
+        moduleSettings.setStatus = function (text) {
+          if (text) moduleSettings.printErr('[post-exception status] ' + text)
+        }
+      }
+
+      function launch_doom(event) {
+        const arguments =
+          argumentsInput.value.length > 0
+            ? argumentsInput.value.split(' ')
+            : ['-file', 'doom1.wad']
+
+        prboom({ ...moduleSettings, arguments }).then((Module) => {
+          window.doom = Module
+
+          if (event) {
+            let result = reader.result
+            const uint8_view = new Uint8Array(result)
+
+            Module.FS.writeFile(uploadInput.files[0].name, uint8_view)
+          }
+
+          Module.callMain(arguments)
+        })
+      }
+
+      function start() {
+        moduleSettings.setStatus('Downloading...')
+
+        let file
+        if (uploadInput.files[0]) {
+          file = uploadInput.files[0]
+        }
+
+        if (file) {
+          reader.addEventListener('loadend', launch_doom)
+          reader.readAsArrayBuffer(file)
+        } else {
+          launch_doom()
+        }
+      }
+
+      function showStart() {
+        startSection.classList.add('hidden')
+        mainSection.classList.remove('hidden')
+        actionsBar.classList.remove('hidden')
+      }
+
+      function showMain() {
+        startSection.classList.remove('hidden')
+        mainSection.classList.add('hidden')
+        actionsBar.classList.add('hidden')
+      }
+
+      launchButton.addEventListener('click', () => {
+        showStart()
+        start()
+      })
+
+      function changeUploadInput() {
+        if (uploadInput.files[0]) {
+          filenameLabel.innerText = uploadInput.files[0].name
+          clearUploadButton.classList.remove('hidden')
+        } else {
+          filenameLabel.innerText = ''
+          clearUploadButton.classList.add('hidden')
+        }
+      }
+
+      uploadInput.addEventListener('change', changeUploadInput)
+
+      clearUploadButton.addEventListener('click', (e) => {
+        uploadInput.value = ''
+        changeUploadInput()
+      })
+
+      document.addEventListener('I_AtExit', () => {
+        showMain()
+      })
+
+      function setVolumeIcon() {
+        if (sfxVolume === 0 && musicVolume === 0) {
+          volumeIcon.innerText = 'volume_off'
+        } else {
+          volumeIcon.innerText = 'volume_up'
+        }
+      }
+
+      function volumeButtonClick() {
+        if (sfxVolume !== 0 && musicVolume !== 0) {
+          storedVolume = { sfxVolume: sfxVolume, musicVolume: musicVolume }
+
+          window.doom.ccall('S_SetVolumes', null, ['number', 'number'], [0, 0], {
+            async: true,
+          })
+        } else {
+          const sfxv = storedVolume.sfxVolume ? storedVolume.sfxVolume : 7
+          const musv = storedVolume.musicVolume ? storedVolume.musicVolume : 7
+
+          window.doom.ccall('S_SetVolumes', null, ['number', 'number'], [sfxv, musv], {
+            async: true,
+          })
+        }
+      }
+
+      volumeButton.addEventListener('click', volumeButtonClick)
+
+      document.addEventListener('S_SetSfxVolume', (e) => {
+        sfxVolume = e.detail.volume
+        setVolumeIcon()
+      })
+      document.addEventListener('S_SetMusicVolume', (e) => {
+        musicVolume = e.detail.volume
+        setVolumeIcon()
+      })
+    </script>
+  </body>
+</html>
