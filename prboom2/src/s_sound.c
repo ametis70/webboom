@@ -50,7 +50,9 @@
 #include "sc_man.h"
 #include "e6y.h"
 
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#endif
 
 // when to clip out sounds
 // Does not fit the large outdoor areas.
