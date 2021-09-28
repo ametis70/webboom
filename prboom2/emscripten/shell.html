@@ -4,6 +4,20 @@
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>WebBoom</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="WebBoom is a WebAssembly port of Doom based on PrBoom+"
+    />
+    <meta property="og:title" content="WebBoom" />
+    <meta
+      property="og:description"
+      content="WebBoom is a WebAssembly port of Doom based on PrBoom+"
+    />
+    <meta property="og:image" content="https://webboom.surge.sh/cacodemon.png" />
+    <meta property="og:url" content="https://webboom.surge.sh" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -246,13 +260,13 @@
   <body>
     <div id="container">
       <header>
-        <img id="logo" src="emscripten/logo.png" />
+        <img id="logo" src="/emscripten/logo.png" alt="WebBoom logo" />
 
         <div id="actions" class="hidden">
-          <button id="fullscreen" class="icon">
+          <button id="fullscreen" class="icon" aria-label="Toggle fullscreen">
             <span class="material-icons big"> fullscreen </span>
           </button>
-          <button id="volume" class="icon">
+          <button id="volume" class="icon" aria-label="Toggle mute">
             <span id="volumeicon" class="material-icons big"> volume_off </span>
           </button>
         </div>
@@ -276,7 +290,7 @@
             You can load a custom&nbsp;<a href="https://doom.fandom.com/wiki/WAD">WAD</a
             >&nbsp;using the button below. To use it, modify the command (i.e.
             adding&nbsp;
-            <span style="background-color: var(--bg)">-file you_file.wad</span>) before
+            <span style="background-color: var(--bg)">-file your_file.wad</span>) before
             clicking on the "Launch Doom" button.
           </p>
 
@@ -301,8 +315,8 @@
             >&nbsp;preloaded, but it also supports&nbsp;<a
               href="https://doomwiki.org/wiki/The_Ultimate_Doom"
               >The Ultimate Doom</a
-            >&nbsp;and&nbsp;<a href="https://doomwiki.org/wiki/Doom_II">Doom II</a>, and
-            also any WAD based off these two.&nbsp;<a href="https://zdoom.org/wiki/IWAD"
+            >&nbsp;and&nbsp;<a href="https://doomwiki.org/wiki/Doom_II">Doom II</a>, plus
+            any WAD based off these two.&nbsp;<a href="https://zdoom.org/wiki/IWAD"
               >This link</a
             >&nbsp;contains a list of games and where to get them, but keep in mind that
             games based on&nbsp;<a href="https://doomwiki.org/wiki/Heretic">Heretic</a
