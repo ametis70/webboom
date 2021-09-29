@@ -6,12 +6,11 @@ WebBoom is a [WebAssembly](https://webassembly.org/) port of Doom based on [PrBo
 
 ## Goals
 
-- Remain compatible with [upstream](https://github.com/coelckers/prboom-plus) by changing as little as possible in the codebase/build scripts. This enables this project to:
+- Remain compatible with [upstream](https://github.com/coelckers/prboom-plus) by changing as little as possible in the codebase/build scripts, which enables WebBoom to:
   + be compiled for desktop and WebAssembly targets
   + incorporate changes made to the original PrBoom+ after this fork was created
 - Retain all singleplayer core features, including sound/music
-- The engine should run at a playable speed
-- Keep the git history intact and have documentation on how to compile this project
+- Keep the git history intact and provide documentation on how to compile the project
 
 ## Compiling
 
@@ -19,12 +18,12 @@ WebBoom is a [WebAssembly](https://webassembly.org/) port of Doom based on [PrBo
 
 This project uses Emscripten as its compiler toolchain. To install it, follow [this instructions](https://emscripten.org/docs/getting_started/downloads.html) and activate the **2.0.30** version.
 
-You'll also need [CMake](https://cmake.org/download/) to create and run the build scripts, so go ahead and install it.
+[CMake](https://cmake.org/download/) is needed to generate and run the build scripts, so go ahead and install that too.
 
 
 ### Bulding `prboom-plus.wad` and prboom-plus for PC 
 
-To run prboom-plus (on desktop or web), you'll need first the `prboom-plus.wad` [PWAD](https://doomwiki.org/wiki/PWAD). It can be built off the `prboom2/data` directory on this repository using the CMake commands to compile a desktop build:
+To run prboom-plus (on desktop or web), you'll first need the `prboom-plus.wad` [PWAD](https://doomwiki.org/wiki/PWAD). It can be built off the `prboom2/data` directory on this repository using the CMake commands to compile a desktop build:
 
 ```sh
 cd prboom2
@@ -66,7 +65,7 @@ emcmake cmake . \
   -D WITH_NET=0 \
   -D PRBOOM_WAD="$HOME/prboom-data/prboom-plus.wad" # Or the path pointing to where the prboom-plus.wad is 
   -D PRELOAD_IWAD="$HOME/prboom-data/doom1.wad" # Or some other IWAD that is recognized by prboom 
-  -D PRELOAD_CONFIG="$HOME/prdata/prboom-plus.cfg" # Optional. A path to a prboom-plus valid config
+  -D PRELOAD_CONFIG="$HOME/prboom-data/prboom-plus.cfg" # Optional. A path to a prboom-plus valid config
   -D CMAKE_BUILD_TYPE="Debug" # Or Release 
 
 emmake cmake --build .
@@ -94,9 +93,19 @@ See also:
 - [emcc reference](https://emscripten.org/docs/tools_reference/emcc.html)
 - [settings.js](https://emscripten.org/docs/api_reference/advanced-apis.html#settings-js)
 
-Switching between `"Release"` and `"Debug"` in `CMAKE_BUILD_TYPE` will enable optimization flags or disable optimization flags. In Debug builds, source maps will also be emitted.
+#### Differences between release and debug builds
+
+Switching between `"Release"` and `"Debug"` in `CMAKE_BUILD_TYPE` affect some defaults flags:
+
+| Type of release | Optimization | Output name | Output suffix | Other flags |
+| --------------- | ------------ | ----------- | ------------- | ----------- |
+| **Debug** | `-O0` (No optimization) | `index` | `.html` | `-gsource-maps --source-map-base /`. (Emit source maps. This will only work if the website is served from the `prboom2` directory) 
+| **Release** | `-Oz` (Optimize the code with focus on size) | `prboom` | `.js` | None |
+
 
 ## Similar projects
+
+The following projects served as inspiration for WebBoom:
 
 | Project                                                               | Description | Play it |
 |-----------------------------------------------------------------------|-------------|---------|
