@@ -44,7 +44,7 @@ Copy the `prboom-plus.wad` above the repository root and then clean it using:
 ```sh
 mkdir $HOME/prboom-data # Create a directory if you want
 cp prboom-plus.wad $HOME/prboom-data # Copy the .wad there
-git clean -xdf # WARNING: This will remove any untracked file added to the repository
+git clean -xdf # WARNING: This will remove any untracked files added to the repository
 ```
 
 ### Compiling with Emscripten
@@ -84,7 +84,7 @@ If you run `python -m "http.server"` or any web server in that directory, you sh
 -D EM_KEYBOARD_ELEMENT="\"doom\"" # DOM ID for the element that will capture mouse and keyboard events  
 -D ADDITIONAL_FLAGS=""  #  Any flag accepted by emcc in the linking stage
 ```
-For instance, this are the `ADDITIONAL_FLAGS` used in the [hosted](https://webboom.surge.sh) version:
+For instance, these are the `ADDITIONAL_FLAGS` used in the [hosted](https://webboom.surge.sh) version:
 ```
  -D ADDITIONAL_FLAGS="-s MODULARIZE=1 -s EXPORT_NAME=prboom --shell-file='../emscripten/shell.html' -s INVOKE_RUN=0"
 ```
