@@ -436,7 +436,7 @@ static dboolean WeaponSelectable(weapontype_t weapon)
 static int G_NextWeapon(int direction)
 {
   weapontype_t weapon;
-  int i, arrlen;
+  int start_i, i, arrlen;
 
   // Find index in the table.
   if (players[consoleplayer].pendingweapon == wp_nochange)
@@ -457,13 +457,14 @@ static int G_NextWeapon(int direction)
     }
   }
 
-  // Switch weapon.
+  // Switch weapon. Don't loop forever.
+  start_i = i;
   do
   {
     i += direction;
     i = (i + arrlen) % arrlen;
   }
-  while (!WeaponSelectable(weapon_order_table[i].weapon));
+  while (i != start_i && !WeaponSelectable(weapon_order_table[i].weapon));
 
   return weapon_order_table[i].weapon_num;
 }
@@ -1008,7 +1009,7 @@ dboolean G_Responder (event_t* ev)
 
   // If the next/previous weapon keys are pressed, set the next_weapon
   // variable to change weapons when the next ticcmd is generated.
-  if (ev->type == ev_keydown)
+  if (gamestate == GS_LEVEL && ev->type == ev_keydown)
   {
     if (ev->data1 == key_prevweapon)
     {
