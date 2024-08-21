@@ -88,23 +88,52 @@ typedef BOOL (WINAPI *SetAffinityFunc)(HANDLE hProcess, DWORD mask);
  * cphipps - much made static
  */
 
+static int basetime = 0;
+
+static int I_GetTime_MS(void)
+{
+  int ticks = SDL_GetTicks();
+
+  if (basetime == 0)
+    basetime = ticks;
+
+  return ticks - basetime;
+}
+
+int ms_to_next_tick;
+
+int I_GetTime_RealTime (void)
+{
+  int64_t t = I_GetTime_MS();
+  int64_t i = t * TICRATE / 1000;
+
+  ms_to_next_tick = (i + 1) * 1000 / TICRATE - t;
+  ms_to_next_tick = BETWEEN(0, 1000 / TICRATE, ms_to_next_tick);
+
+  return i;
+}
+
 int realtic_clock_rate = 100;
-static int_64_t I_GetTime_Scale = 1<<24;
 
 static int I_GetTime_Scaled(void)
 {
-  return (int)( (int_64_t) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
+  int64_t t = I_GetTime_MS();
+  int64_t i = t * TICRATE * realtic_clock_rate / 100000;
+
+  ms_to_next_tick = (i + 1) * 100000 / realtic_clock_rate / TICRATE - t;
+  ms_to_next_tick = BETWEEN(0, 100000 / realtic_clock_rate / TICRATE, ms_to_next_tick);
+
+  return i;
 }
-
-
 
 static int  I_GetTime_FastDemo(void)
 {
   static int fasttic;
+
+  ms_to_next_tick = 0;
+
   return fasttic++;
 }
-
-
 
 static int I_GetTime_Error(void)
 {
@@ -112,23 +141,45 @@ static int I_GetTime_Error(void)
   return 0;
 }
 
-
-
 int (*I_GetTime)(void) = I_GetTime_Error;
+
+// During a fast demo, no time elapses in between ticks
+static int I_TickElapsedTime_FastDemo(void)
+{
+  return 0;
+}
+
+static int I_TickElapsedTime_RealTime(void)
+{
+  return (int64_t)I_GetTime_MS() * TICRATE % 1000 * FRACUNIT / 1000;
+}
+
+static int I_TickElapsedTime_Scaled(void)
+{
+  return (int64_t)I_GetTime_MS() * realtic_clock_rate * TICRATE / 100 % 1000 * FRACUNIT / 1000;
+}
+
+int (*I_TickElapsedTime)(void) = I_TickElapsedTime_RealTime;
 
 void I_Init(void)
 {
   /* killough 4/14/98: Adjustable speedup based on realtic_clock_rate */
   if (fastdemo)
+  {
     I_GetTime = I_GetTime_FastDemo;
+    I_TickElapsedTime = I_TickElapsedTime_FastDemo;
+  }
   else
     if (realtic_clock_rate != 100)
       {
-        I_GetTime_Scale = ((int_64_t) realtic_clock_rate << 24) / 100;
         I_GetTime = I_GetTime_Scaled;
+        I_TickElapsedTime = I_TickElapsedTime_Scaled;
       }
     else
+    {
       I_GetTime = I_GetTime_RealTime;
+      I_TickElapsedTime = I_TickElapsedTime_RealTime;
+    }
 
   {
     /* killough 2/21/98: avoid sound initialization if no sound & no music */
@@ -143,16 +194,22 @@ void I_Init(void)
 void I_Init2(void)
 {
   if (fastdemo)
+  {
     I_GetTime = I_GetTime_FastDemo;
+    I_TickElapsedTime = I_TickElapsedTime_FastDemo;
+  }
   else
   {
     if (realtic_clock_rate != 100)
       {
-        I_GetTime_Scale = ((int_64_t) realtic_clock_rate << 24) / 100;
         I_GetTime = I_GetTime_Scaled;
+        I_TickElapsedTime = I_TickElapsedTime_Scaled;
       }
     else
+    {
       I_GetTime = I_GetTime_RealTime;
+      I_TickElapsedTime = I_TickElapsedTime_RealTime;
+    }
   }
   R_InitInterpolation();
   force_singletics_to = gametic + BACKUPTICS;
