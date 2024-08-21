@@ -265,11 +265,32 @@ static void FUNC_V_CopyRect(int srcscrn, int destscrn,
     y += params->deltay1;
   }
 
-#ifdef RANGECHECK
-  if (x < 0 || x + width > SCREENWIDTH ||
-      y < 0 || y + height > SCREENHEIGHT)
-    I_Error ("V_CopyRect: Bad arguments");
-#endif
+  if (x < 0)
+  {
+    width += x;
+    x = 0;
+  }
+
+  if (x + width > SCREENWIDTH)
+  {
+    width = SCREENWIDTH - x;
+  }
+
+  if (y < 0)
+  {
+    height += y;
+    y = 0;
+  }
+
+  if (y + height > SCREENHEIGHT)
+  {
+    height = SCREENHEIGHT - y;
+  }
+
+  if (width <= 0 || height <= 0)
+  {
+    return;
+  }
 
   src = screens[srcscrn].data + screens[srcscrn].byte_pitch * y + x * pixel_depth;
   dest = screens[destscrn].data + screens[destscrn].byte_pitch * y + x * pixel_depth;
@@ -1609,11 +1630,12 @@ void SetRatio(int width, int height)
   // The terms storage aspect ratio, pixel aspect ratio, and display aspect
   // ratio came from Wikipedia.  SAR x PAR = DAR
   lprintf(LO_INFO, "SetRatio: storage aspect ratio %u:%u\n", ratio_multiplier, ratio_scale);
-  if ((width == 320 && height == 200) || (width == 640 && height == 400))
+  if (height == 200 || height == 400)
   {
     lprintf(LO_INFO, "SetRatio: recognized VGA mode with pixel aspect ratio 5:6\n");
-    ratio_multiplier = 4;
-    ratio_scale = 3;
+    ratio_multiplier = width * 5;
+    ratio_scale = height * 6;
+    ReduceFraction(&ratio_multiplier, &ratio_scale);
   }
   else
   {

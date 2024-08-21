@@ -47,6 +47,7 @@
 
 // Ty 03/17/98: flag that new par times have been loaded in d_deh
 extern dboolean deh_pars;
+extern dboolean um_pars;
 
 //
 // Data needed to add patches to full screen intermission pics.
@@ -502,6 +503,12 @@ void WI_drawLF(void)
 	  // The level defines a new name but no texture for the name.
 	  WI_DrawString(160, y, wbs->lastmapinfo->levelname);
 	  y += (5 * hu_font['A' - HU_FONTSTART].height / 4);
+
+	  if (wbs->lastmapinfo->author)
+	  {
+		  WI_DrawString(160, y, wbs->lastmapinfo->author);
+		  y += (5 * hu_font['A' - HU_FONTSTART].height / 4);
+	  }
   }
   else
   {
@@ -551,6 +558,15 @@ void WI_drawEL(void)
 
 		// The level defines a new name but no texture for the name.
 		WI_DrawString(160, y, wbs->nextmapinfo->levelname);
+
+		if (wbs->nextmapinfo->author)
+		{
+			y += (5 * hu_font['A' - HU_FONTSTART].height / 4);
+
+			WI_DrawString(160, y, wbs->nextmapinfo->author);
+		}
+
+		y += (5 * hu_font['A' - HU_FONTSTART].height / 4);
 	}
 	else
 	{
@@ -567,6 +583,8 @@ void WI_drawEL(void)
 		// CPhipps - patch drawing updated
 		V_DrawNamePatch((320 - V_NamePatchWidth(lname)) / 2, y, FB,
 			lname, CR_DEFAULT, VPT_STRETCH);
+
+		y += (5 * V_NamePatchHeight(lname)) / 4;
 	}
 }
 
@@ -929,9 +947,10 @@ static void WI_drawTimeStats(int cnt_time, int cnt_total_time, int cnt_par)
   // killough 2/22/98: skip drawing par times on pwads
   // Ty 03/17/98: unless pars changed with deh patch
 
-  if (!(modifiedgame && !deh_pars) || (gamemission == pack_nerve && singleplayer))
+  if (!(modifiedgame && !deh_pars && !um_pars)
+          || (gamemission == pack_nerve && singleplayer))
   {
-    if (wbs->epsd < 4)
+    if (wbs->epsd < 4 || um_pars)
     {
       V_DrawNamePatch(320/2 + SP_TIMEX, SP_TIMEY, FB, par, CR_DEFAULT, VPT_STRETCH);
       WI_drawTime(320 - SP_TIMEX, SP_TIMEY, cnt_par);

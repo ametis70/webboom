@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 project("WebBoom"
-    VERSION 2.6.1
+    VERSION 2.6.66
     HOMEPAGE_URL "https://github.com/ianmethyst/webboom")
 
 if (EMSCRIPTEN)
@@ -30,6 +30,10 @@ else()
     TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 endif()
 
+# Check if a CMAKE_INSTALL_DOCDIR is provided before GNUInstallDirs sets its
+# own default; this lets us set our own PrBoom-Plus default docdir later
+# without clobbering a user-configured one
+set(CUSTOM_DOCDIR "${CMAKE_INSTALL_DOCDIR}")
 include(GNUInstallDirs)
 
 # Automated dependencies discovery, mostly needed for MSVC
@@ -43,10 +47,12 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../depen
 
 set(PACKAGE_NAME "${PROJECT_NAME}")
 set(PACKAGE_TARNAME "prboom-plus")
-set(PACKAGE_VERSION "${PROJECT_VERSION}um")
+set(PACKAGE_VERSION "${PROJECT_VERSION}")
 set(PACKAGE_HOMEPAGE "${PROJECT_HOMEPAGE_URL}")
 set(PACKAGE_STRING "${PROJECT_NAME} ${PROJECT_VERSION}")
-set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/${PACKAGE_TARNAME}" CACHE PATH "" FORCE)
+if(NOT CUSTOM_DOCDIR)
+  set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_DATAROOTDIR}/doc/${PACKAGE_TARNAME}" CACHE PATH "" FORCE)
+endif()
 
 include(CheckSymbolExists)
 
@@ -84,6 +90,7 @@ check_include_file("dirent.h" HAVE_DIRENT_H)
 
 option(BUILD_GL "Enable OpenGL rendering code" ON)
 if(BUILD_GL)
+    set(OpenGL_GL_PREFERENCE LEGACY)
     find_package(OpenGL)
 endif()
 
